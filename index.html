@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizMaster: Online Quiz Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .question {
+      margin: 20px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .question h3 {
+      margin: 10px 0;
+    }
+
+    #question2 {
+      font-family: 'Creepster', cursive;
+    }
+
+    #question2 input[type="radio"] {
+      margin-right: 10px;
+      font-family: 'Creepster', cursive;
+    }
+
+    .result {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.2em;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+      width: 150px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    button:active {
+      background-color: #1e7e34;
+    }
+
+    .retake-button {
+      background-color: #007bff;
+      margin-top: 10px;
+    }
+
+    .retake-button:hover {
+      background-color: #0056b3;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    .timer {
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .correct {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+
+    .incorrect {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+    }
+
+    .incorrect-yellow {
+      background-color: #ffeeba;
+      border: 1px solid #ffeeba;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>QuizMaster: General Knowledge Quiz</h1>
+
+    <div class="timer">
+      Time left: <span id="timer">20</span> seconds
+    </div>
+
+    <div class="question" id="question1">
+      <h3>1. What is the capital of France?</h3>
+      <input type="radio" name="q1" value="correct"> Paris<br>
+      <input type="radio" name="q1" value="incorrect" onclick="deselect(this)"> Rome<br>
+      <input type="radio" name="q1" value="incorrect" onclick="deselect(this)"> Madrid<br>
+    </div>
+
+    <div class="question" id="question2">
+      <h3>2. Which planet is closest to the sun?</h3>
+      <input type="radio" name="q2" value="correct"> Mercury<br>
+      <input type="radio" name="q2" value="incorrect"> Venus<br>
+      <input type="radio" name="q2" value="incorrect"> Mars<br>
+    </div>
+
+    <div class="question" id="question3">
+      <h3>3. What is the square root of 64?</h3>
+      <input type="radio" name="q3" value="incorrect"> 8<br>
+      <input type="radio" name="q3" value="correct"> 6<br>
+      <input type="radio" name="q3" value="incorrect"> 10<br>
+    </div>
+
+    <button id="submitBtn" onclick="handleSubmit()">Submit Quiz</button>
+    <button class="retake-button hide" id="retakeBtn" onclick="retakeQuiz()">Retake Quiz</button>
+
+    <div class="result hide" id="result">
+      <p>Your score: <span id="score"></span>/3</p>
+    </div>
+
+    <div class="error hide" id="error">Please answer all the questions before submitting!</div>
+  </div>
+
+  <script>
+    let timer = 20;
+    let interval = setInterval(startTimer, 1000);
+
+    function startTimer() {
+      const timerElement = document.getElementById('timer');
+      timer--;
+      timerElement.textContent = timer;
+
+      if (timer === 0) {
+        clearInterval(interval);
+        submitQuiz();
+      }
+    }
+
+    function handleSubmit() {
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.style.backgroundColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+      submitBtn.style.fontSize = `${Math.floor(Math.random() * 10 + 12)}px`;
+
+      submitQuiz();
+    }
+
+    function deselect(selected) {
+      if (selected.value === "incorrect") {
+        selected.checked = false; // Deselect "Rome" or "Madrid" if clicked
+      }
+    }
+
+    function submitQuiz() {
+      const questions = document.querySelectorAll('.question');
+      let score = 0;
+      let allAnswered = true;
+
+      questions.forEach((question, index) => {
+        const selectedAnswer = document.querySelector(`input[name="q${index + 1}"]:checked`);
+        const questionElement = document.getElementById(`question${index + 1}`);
+
+        if (!selectedAnswer) {
+          allAnswered = false;
+          questionElement.classList.add('incorrect');
+        } else if (selectedAnswer.value === "correct") {
+          score++;
+          questionElement.classList.add('correct');
+        } else {
+          questionElement.classList.add(selectedAnswer.value === 'incorrect' && questionElement.id === 'question2' ? 'incorrect-yellow' : 'incorrect');
+        }
+      });
+
+      if (!allAnswered) {
+        document.getElementById('error').classList.remove('hide');
+        return;
+      }
+
+      const resultDiv = document.getElementById('result');
+      const scoreSpan = document.getElementById('score');
+
+      // Show score based on correct answers
+      if (score > 0) {
+        scoreSpan.textContent = "3"; // Show score as 3 if at least one answer is correct
+      } else {
+        scoreSpan.textContent = "0"; // Show score as 0 if no correct answers
+      }
+
+      resultDiv.classList.remove('hide');
+      document.getElementById('error').classList.add('hide');
+      document.getElementById('retakeBtn').classList.remove('hide');
+    }
+
+    function retakeQuiz() {
+      const radioButtons = document.querySelectorAll('input[name="q1"], input[name="q3"]');
+      radioButtons.forEach(button => {
+        button.checked = false;
+        const questionElement = button.closest('.question');
+        questionElement.classList.remove('correct', 'incorrect', 'incorrect-yellow');
+      });
+
+      const question2 = document.getElementById('question2');
+      const selectedAnswerQ2 = document.querySelector(`input[name="q2"]:checked`);
+      if (selectedAnswerQ2) {
+        question2.classList.add(selectedAnswerQ2.value === 'incorrect' ? 'incorrect-yellow' : 'correct');
+      }
+
+      document.getElementById('result').classList.add('hide');
+      document.getElementById('retakeBtn').classList.add('hide');
+      document.getElementById('error').classList.add('hide');
+
+      timer = Math.floor(Math.random() * 19) + 1; // Randomize timer for the next quiz
+      startTimer(); // Restart timer
+    }
+  </script>
+</body>
+</html>
